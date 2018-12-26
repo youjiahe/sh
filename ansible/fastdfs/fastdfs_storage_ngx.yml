@@ -85,8 +85,8 @@
   - name: conf iptables delete old item
     lineinfile:
       path: /etc/sysconfig/iptables
-      regexp: '8888'
       state: absent
+      regexp: '8888'
   - name: conf iptables
     lineinfile:
       path: /etc/sysconfig/iptables
