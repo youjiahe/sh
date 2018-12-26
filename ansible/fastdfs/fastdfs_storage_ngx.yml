@@ -82,12 +82,17 @@
     ignore_errors: True
   - name: create data link
     shell: ln -s /fastdfs/storage/data/ /fastdfs/storage/data/M00
-  - name: conf iptables;
+  - name: conf iptables delete old item
+    lineinfile:
+      path: /etc/sysconfig/iptables
+      regexp: '8888'
+      state: absent
+  - name: conf iptables
     lineinfile:
       path: /etc/sysconfig/iptables
       regexp: '^iiii'
       insertbefore: '^COMMIT'
-      line: '-A INPUT -m state --state NEW -p tcp --dport 8888 -j ACCEPT'
+      line: '-I INPUT -m state --state NEW -p tcp --dport 8888 -j ACCEPT'
   - service:
       name: iptables
       state: restarted
