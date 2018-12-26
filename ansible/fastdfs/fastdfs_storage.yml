@@ -1,5 +1,5 @@
 ---
-- hosts: sto
+- hosts: storage_test
   remote_user: root
   vars:
     tracker1: 192.168.1.11
@@ -26,15 +26,19 @@
     shell: mkdir -p /usr/local/src  /data/pkgs  /fastdfs/storage
   - name: copy tarball,copy zip
     copy: 
-      src: /root/git/sh/ansible/fastdfs/pkgs/fastdfs
+      src: /data/pkgs/fastdfs
       dest: /data/pkgs
   - name: tar , unzip
     shell: cd /data/pkgs/fastdfs && tar -xf FastDFS_v5.08.tar.gz -C /usr/local/src/ && unzip libfastcommon-master.zip -d /usr/local/src/ 
+    ignore_errors: True
   - name: make libfastcommon-master
     shell: cd /usr/local/src/libfastcommon-master && ./make.sh && ./make.sh install
+    tags: make_lib
+
   - name: make FastDFS
     shell: cd /usr/local/src/FastDFS && ./make.sh && ./make.sh install
-    
+    tags: make_fastdfs
+
   - name: conf storage
     shell: cp /etc/fdfs/storage.conf.sample /etc/fdfs/storage.conf
   - name: conf storage

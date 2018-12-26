@@ -17,7 +17,6 @@ expect "Password:" {send "1\n"}
 expect "#"      {send "yum -y install wget\n"}
 expect "~]#"      {send "ls /root/static_ip.sh ||  wget ftp://192.168.1.254/share/static_ip.sh -O /root/static_ip.sh\n"}
 expect "~]#"    {send "bash static_ip.sh $3\n"}
-expect "#"    {send "bash static_ip.sh $3\n"}
 expect "#"      {send "exit\r"}
 EOF
 

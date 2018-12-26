@@ -1,0 +1,107 @@
+---
+- hosts: storage_test
+  remote_user: root
+  vars:
+    tracker1: 192.168.1.11
+    tracker2: 192.168.1.12
+  tasks:
+  - name: install devel
+    yum: 
+      name: "{{item}}"
+      state: present
+    with_items:
+    - gcc
+    - gcc-c++
+    - make
+    - automake
+    - autoconf
+    - pcre-devel
+    - zlib
+    - openssl
+    - openssl-devel
+    - iptables-services
+
+  - name: tar fastdfs-nginx-module
+    shell: cd /data/pkgs/fastdfs/ && tar -xf fastdfs-nginx-module_v1.16.tar.gz -C /usr/local/src
+
+  - name: conf fastdfs-nginx-module
+    lineinfile:
+      path: /usr/local/src/fastdfs-nginx-module/src/config
+      regexp: '^CORE_INCS='
+      line: 'CORE_INCS="$CORE_INCS /usr/include/fastdfs /usr/include/fastcommon/"'
+
+  - name: make and conf nginx
+    shell: id nginx || useradd -s /sbin/nologin nginx 
+  - shell: cd /data/pkgs/fastdfs/ && tar -xf ngx_cache_purge-2.3.tar.gz -C /usr/local/src 
+  - shell: cd /data/pkgs/fastdfs/ && tar -xf nginx-1.12.2.tar.gz -C /usr/local/src 
+  - shell: cd /usr/local/src/nginx-1.12.2 && ./configure --user=nginx --group=nginx --with-http_stub_status_module --with-http_ssl_module --with-stream --without-http_ssi_module --without-http_autoindex_module --add-module=/usr/local/src/fastdfs-nginx-module/src --add-module=/usr/local/src/ngx_cache_purge-2.3 && make && make install
+  - shell: chown -R nginx:nginx /usr/local/nginx 
+  - shell: echo 'export PATH=$PATH:/usr/local/nginx/sbin' >> /etc/profile
+
+  - name: copy and conf fastd module 
+    shell: cp /usr/local/src/fastdfs-nginx-module/src/mod_fastdfs.conf  /etc/fdfs/  
+  - lineinfile:
+      path: /etc/fdfs/mod_fastdfs.conf
+      regexp: '^connect_timeout='
+      line: 'connect_timeout=10'
+  - lineinfile:
+      path: /etc/fdfs/mod_fastdfs.conf
+      regexp: '^base_path='
+      line: 'base_path=/tmp'
+  - lineinfile:
+      path: /etc/fdfs/mod_fastdfs.conf
+      regexp: '^tracker_server='
+      line: 'tracker_server={{tracker1}}:22122'
+  - lineinfile:
+      path: /etc/fdfs/mod_fastdfs.conf
+      regexp: '^cker_server='
+      insertafter: '^tracker_server={{tracker1}}:22122'
+      line: 'tracker_server={{tracker2}}:22122'
+  - lineinfile:
+      path: /etc/fdfs/mod_fastdfs.conf
+      regexp: '^url_have_group_name'
+      line: 'url_have_group_name=true'
+  - lineinfile:
+      path: /etc/fdfs/mod_fastdfs.conf
+      regexp: '^group_name'
+      line: 'group_name=group1'
+  - lineinfile:
+      path: /etc/fdfs/mod_fastdfs.conf
+      regexp: '^storage_server_port'
+      line: 'storage_server_port=23000'
+  - lineinfile:
+      path: /etc/fdfs/mod_fastdfs.conf
+      regexp: '^store_path_count'
+      line: 'store_path_count=1'
+  - lineinfile:
+      path: /etc/fdfs/mod_fastdfs.conf
+      regexp: '^store_path0'
+      line: 'store_path0=/fastdfs/storage'
+  - name: cp conf file
+    shell: cp /usr/local/src/FastDFS/conf/{http.conf,mime.types} /etc/fdfs
+    ignore_errors: True
+  - name: create data link
+    shell: ln -s /fastdfs/storage/data/ /fastdfs/storage/data/M00
+  - name: conf iptables;
+    lineinfile:
+      path: /etc/sysconfig/iptables
+      regexp: '^iiii'
+      insertbefore: '^COMMIT'
+      line: '-A INPUT -m state --state NEW -p tcp --dport 8888 -j ACCEPT'
+  - service:
+      name: iptables
+      state: restarted
+    tags: start_iptables
+  - name: copy nginx conf file 
+    copy:
+      src: nginx.conf
+      dest: /usr/local/nginx/conf
+      owner: nginx 
+      group: nginx
+    tags: start_nginx
+  - name: nginx start
+    shell: /usr/local/nginx/sbin/nginx
+    tags: start_nginx
+
+       
+   

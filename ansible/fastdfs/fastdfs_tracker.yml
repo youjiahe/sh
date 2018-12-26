@@ -19,7 +19,7 @@
     shell: mkdir -p /usr/local/src  /data/pkgs  /fastdfs/tracker
   - name: copy tarball,copy zip
     copy: 
-      src: /root/ansible/pkgs/fastdfs
+      src: /data/pkgs/fastdfs
       dest: /data/pkgs
   - name: tar , unzip
     shell: cd /data/pkgs/fastdfs && tar -xf FastDFS_v5.08.tar.gz -C /usr/local/src/ && unzip libfastcommon-master.zip -d /usr/local/src/ 
