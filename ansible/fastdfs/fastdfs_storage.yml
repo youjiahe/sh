@@ -82,8 +82,8 @@
   - name: conf iptables delete old conf
     lineinfile:
       path: /etc/sysconfig/iptables
+      state: absent
       regexp: '23000'
-      line: absent
   - name: conf iptables
     lineinfile:
       dest: /etc/sysconfig/iptables
