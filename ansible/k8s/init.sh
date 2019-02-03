@@ -15,6 +15,7 @@ cat <<EOF >  /etc/sysctl.d/k8s.conf
 net.bridge.bridge-nf-call-ip6tables = 1
 net.bridge.bridge-nf-call-iptables = 1
 EOF
+sysctl -p
 
 ###########docker_install###########
 if [ ! -d $DOCKER_PKGS_DIR ];then 
@@ -25,13 +26,20 @@ cd $DOCKER_PKGS_DIR && yum -y install ./*.rpm &>/dev/null
 [ $? -eq 0 ]  && systemctl restart docker
 ###########docker_conf###########
 docker version | grep -i version
-sed -i '/proxy=http:\/\/127.0.0.1:8118/d' /etc/yum.conf
-mkdir -p /etc/systemd/system/docker.service.d
-echo '[Service]
-Environment="HTTP_PROXY=http://127.0.0.1:8118" "NO_PROXY=localhost,172.16.0.0/16,127.0.0.1,10.244.0.0/16"' > /etc/systemd/system/docker.service.d/http-proxy.conf
-echo '[Service]
-Environment="HTTP_PROXY=http://127.0.0.1:8118" "NO_PROXY=localhost,172.16.0.0/16,127.0.0.1,10.244.0.0/16"' > /etc/systemd/system/docker.service.d/https-proxy.conf
-systemctl daemon-reload && systemctl restart docker
+#sed -i '/proxy=http:\/\/127.0.0.1:8118/d' /etc/yum.conf
+#mkdir -p /usr/lib/systemd/system/docker.service.d
+#echo '[Service]
+#Environment="HTTP_PROXY=http://127.0.0.1:8118" "NO_PROXY=localhost,172.16.0.0/16,127.0.0.1,10.244.0.0/16"' > /usr/lib/systemd/system/docker.service.d/http-proxy.conf
+#echo '[Service]
+#Environment="HTTPS_PROXY=http://127.0.0.1:8118" "NO_PROXY=localhost,172.16.0.0/16,127.0.0.1,10.244.0.0/16"' > /usr/lib/systemd/system/docker.service.d/https-proxy.conf
+cat <<EOF >/etc/docker/daemon.json
+{
+ "registry-mirrors": ["https://registry.docker-cn.com"]
+}
+EOF
+systemctl daemon-reload \
+&& systemctl restart docker \
+&& systemctl enable docker
 if [ $? -ne 0 ]; then 
 	echo "docker restart err"
 	exit 2
