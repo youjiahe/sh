@@ -5,7 +5,7 @@ MYSQL_DIR="/data/mysql_data/mysql"
 #删除冲突包
 rpm -qa | egrep -i  "(mariadb|mysql|postfix)"  | xargs -i rpm -ev --nodeps {}
 
-#添加mysql用户
+#添加mysql系统用户，
 useradd -r mysql &>/dev/null
 
 #判断mysql的rpm包目录是否给定/存在
@@ -18,7 +18,7 @@ elif [ ! -d ${MYSQL_RPM_DIR} ]; then
 fi
 
 #安装mysql
-     yum -y install perl-JSON  perl-Data-Dumper.x86_64 net-tools
+     yum -y install perl-JSON  perl-Data-Dumper.x86_64 net-tools libaio
      [ -f /etc/my.cnf ] && \cp /etc/my.cnf{,.bak}  && rm -rf /etc/my.cnf
      rpm -ivh ${MYSQL_RPM_DIR}/mysql-community-common-5.7.24-1.el7.x86_64.rpm  
      rpm -ivh ${MYSQL_RPM_DIR}/mysql-community-libs-5.7.24-1.el7.x86_64.rpm 
