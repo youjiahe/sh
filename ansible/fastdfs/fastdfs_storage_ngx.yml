@@ -1,9 +1,12 @@
 ---
-- hosts: storage_test
+- hosts: f_sto
   remote_user: root
+#  remote_user: nfdw
+#  become: yes
+#  become_user: root
+#  become_method: sudo
   vars:
-    tracker1: 192.168.1.11
-    tracker2: 192.168.1.12
+    tracker1: 192.168.8.238
   tasks:
   - name: install devel
     yum: 
@@ -33,8 +36,8 @@
   - name: make and conf nginx
     shell: id nginx || useradd -s /sbin/nologin nginx 
   - shell: cd /data/pkgs/fastdfs/ && tar -xf ngx_cache_purge-2.3.tar.gz -C /usr/local/src 
-  - shell: cd /data/pkgs/fastdfs/ && tar -xf nginx-1.12.2.tar.gz -C /usr/local/src 
-  - shell: cd /usr/local/src/nginx-1.12.2 && ./configure --user=nginx --group=nginx --with-http_stub_status_module --with-http_ssl_module --with-stream --without-http_ssi_module --without-http_autoindex_module --add-module=/usr/local/src/fastdfs-nginx-module/src --add-module=/usr/local/src/ngx_cache_purge-2.3 && make && make install
+  - shell: cd /data/pkgs/fastdfs/ && tar -xf nginx-1.15.8.tar.gz -C /usr/local/src 
+  - shell: cd /usr/local/src/nginx-1.15.8 && ./configure --user=nginx --group=nginx --with-http_stub_status_module --with-http_ssl_module --with-stream --without-http_ssi_module --without-http_autoindex_module --add-module=/usr/local/src/fastdfs-nginx-module/src --add-module=/usr/local/src/ngx_cache_purge-2.3 && make && make install
   - shell: chown -R nginx:nginx /usr/local/nginx 
   - shell: echo 'export PATH=$PATH:/usr/local/nginx/sbin' >> /etc/profile
 
@@ -52,11 +55,11 @@
       path: /etc/fdfs/mod_fastdfs.conf
       regexp: '^tracker_server='
       line: 'tracker_server={{tracker1}}:22122'
-  - lineinfile:
-      path: /etc/fdfs/mod_fastdfs.conf
-      regexp: '^cker_server='
-      insertafter: '^tracker_server={{tracker1}}:22122'
-      line: 'tracker_server={{tracker2}}:22122'
+#  - lineinfile:
+#      path: /etc/fdfs/mod_fastdfs.conf
+#      regexp: '^cker_server='
+#      insertafter: '^tracker_server={{tracker1}}:22122'
+#      line: 'tracker_server={{tracker2}}:22122'
   - lineinfile:
       path: /etc/fdfs/mod_fastdfs.conf
       regexp: '^url_have_group_name'
@@ -82,17 +85,12 @@
     ignore_errors: True
   - name: create data link
     shell: ln -s /fastdfs/storage/data/ /fastdfs/storage/data/M00
-  - name: conf iptables delete old item
-    lineinfile:
-      path: /etc/sysconfig/iptables
-      state: absent
-      regexp: '8888'
   - name: conf iptables
     lineinfile:
       path: /etc/sysconfig/iptables
-      regexp: '^iiii'
+      regexp: '9999'
       insertbefore: '^COMMIT'
-      line: '-I INPUT -m state --state NEW -p tcp --dport 8888 -j ACCEPT'
+      line: '-I INPUT -m state --state NEW -p tcp --dport 9999 -j ACCEPT'
   - service:
       name: iptables
       state: restarted

@@ -1,6 +1,10 @@
 ---
-- hosts: trk 
+- hosts: f_trk 
   remote_user: root
+#  remote_user: nfdw
+#  become: yes
+#  become_user: root
+#  become_method: sudo
   tasks:
   - name: install devel
     yum: 
@@ -23,6 +27,7 @@
       dest: /data/pkgs
   - name: tar , unzip
     shell: cd /data/pkgs/fastdfs && tar -xf FastDFS_v5.08.tar.gz -C /usr/local/src/ && unzip libfastcommon-master.zip -d /usr/local/src/ 
+    ignore_errors: True
   - name: make libfastcommon-master
     shell: cd /usr/local/src/libfastcommon-master && ./make.sh && ./make.sh install
   - name: make FastDFS
@@ -50,6 +55,20 @@
       path: /etc/fdfs/tracker.conf
       regexp: "^storage_group="
       line: "storage_group=group1"
+  - name: conf iptables
+    lineinfile:
+      dest: /etc/sysconfig/iptables
+      regexp: "22122"
+      insertbefore: "^COMMIT"
+      line: "{{item.line}}"
+    with_items:
+    - { line: '-I INPUT -m state --state NEW -p tcp --dport 22122 -j ACCEPT'}
+    tags: iptables
+  - name: restart iptables
+    service:
+      name: iptables
+      state: restarted
+    tags: iptables_restart
   - name: start tracker
     shell: /etc/init.d/fdfs_trackerd start && netstat -untlp | grep :22122
     tags: start

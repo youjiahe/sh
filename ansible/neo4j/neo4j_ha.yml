@@ -1,0 +1,10 @@
+---
+- hosts: neo4j
+  remote_user: nfdw
+  become: yes
+  become_user: root
+  become_method: sudo 
+  tasks:
+  - name: run sh neo4j_ha.sh
+    script: /home/nfdw/ansible/neo4j/neo4j_ha.sh
+

@@ -1,9 +1,12 @@
 ---
-- hosts: storage_test
+- hosts: f_sto
   remote_user: root
+#  remote_user: nfdw
+#  become: yes
+#  become_user: root
+#  become_method: sudo
   vars:
-    tracker1: 192.168.1.11
-    tracker2: 192.168.1.12
+    tracker1: 192.168.8.238
   tasks:
   - name: install devel
     yum: 
@@ -66,19 +69,19 @@
       path: /etc/fdfs/storage.conf
       regexp: "^tracker_server"
       line: 'tracker_server={{tracker1}}:22122'
-  - name: conf storage_tracker2
-    lineinfile:
-      dest: /etc/fdfs/storage.conf
-      regexp: "^cker_sercer="
-      insertafter: '^tracker_sercer={{tracker1}}:22122'
-      line: "{{item.line}}"
-    with_items:
-    - { line: 'tracker_server={{tracker2}}:22122'}
+#  - name: conf storage_tracker2
+#    lineinfile:
+#      dest: /etc/fdfs/storage.conf
+#      regexp: "^cker_sercer="
+#      insertafter: '^tracker_sercer={{tracker1}}:22122'
+#      line: "{{item.line}}"
+#    with_items:
+#    - { line: 'tracker_server={{tracker2}}:22122'}
   - name: conf storage_tracker1
     lineinfile:
       path: /etc/fdfs/storage.conf
       regexp: '^http.server_port'
-      line: "http.server_port=8888"
+      line: "http.server_port=9999"
   - name: conf iptables delete old conf
     lineinfile:
       path: /etc/sysconfig/iptables
@@ -87,7 +90,7 @@
   - name: conf iptables
     lineinfile:
       dest: /etc/sysconfig/iptables
-      regexp: "^filter"
+      regexp: "23000"
       insertbefore: "^COMMIT"
       line: "{{item.line}}"
     with_items:
